@@ -1,0 +1,558 @@
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+import '../viewmodels/urgent_help_viewmodel.dart';
+import './emergency_contacts_screen.dart';
+
+class UrgentHelpScreen extends StatefulWidget {
+  const UrgentHelpScreen({super.key});
+
+  @override
+  State<UrgentHelpScreen> createState() => _UrgentHelpScreenState();
+}
+
+class _UrgentHelpScreenState extends State<UrgentHelpScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<Color?> _gradientAnimation;
+  
+  late UrgentHelpViewModel _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _viewModel = UrgentHelpViewModel();
+    
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1800),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.2, 0.8, curve: Curves.easeOutBack),
+      ),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.4, 1.0, curve: Curves.elasticOut),
+      ),
+    );
+
+    _gradientAnimation = ColorTween(
+      begin: const Color(0xFFFFE0E0),
+      end: const Color(0xFFFCE4EC),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _controller.forward();
+
+    // Start floating animation loop
+    Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_controller.status == AnimationStatus.completed) {
+        _controller.reverse();
+        Future.delayed(const Duration(milliseconds: 800), () {
+          _controller.forward();
+        });
+      }
+    });
+    
+    // Listen for navigation
+    _viewModel.addListener(_handleNavigation);
+  }
+  
+  void _handleNavigation() {
+    final destination = _viewModel.navigationDestination;
+    if (destination != null && mounted) {
+      _viewModel.resetNavigation();
+      
+      if (destination == UrgentHelpViewModel.routeEmergencyContacts) {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 800),
+            pageBuilder: (_, __, ___) => const EmergencyContactsScreen(),
+            transitionsBuilder: (_, animation, __, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOutCubic,
+                  ),
+                ),
+                child: child,
+              );
+            },
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _viewModel.removeListener(_handleNavigation);
+    _viewModel.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Scaffold(
+          body: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  _gradientAnimation.value!,
+                  _gradientAnimation.value!.withOpacity(0.8),
+                ],
+                center: Alignment.topRight,
+                radius: 1.8,
+                stops: const [0.1, 1.0],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Animated background particles
+                ...List.generate(8, (index) {
+                  return Positioned(
+                    top: 100 + sin(index * 0.8 + _controller.value * 2) * 50,
+                    left: 50 + cos(index * 0.5 + _controller.value) * 200,
+                    child: Opacity(
+                      opacity: 0.1 + 0.1 * sin(index + _controller.value * 3),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.pinkAccent.withOpacity(0.1),
+                              Colors.pinkAccent.withOpacity(0.05),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+
+                SafeArea(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Animated header
+                          SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(-1.0, 0.0),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: _controller,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () => _viewModel.goBack(context),
+                                  child: Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.4),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_back_rounded,
+                                      color: Colors.black87,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Urgent Support',
+                                        style: TextStyle(
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.black87,
+                                          height: 1,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Immediate help when you need it',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          // Hero animation with floating effect
+                          ScaleTransition(
+                            scale: _scaleAnimation,
+                            child: Center(
+                              child: Container(
+                                width: 220,
+                                height: 220,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.pinkAccent.withOpacity(0.3),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [0.1, 1.0],
+                                  ),
+                                ),
+                                child: Transform.translate(
+                                  offset: Offset(
+                                    0,
+                                    sin(_controller.value * 2 * pi) * 10,
+                                  ),
+                                  child: Lottie.asset(
+                                    'assets/animations/lil_heart.json',
+                                    repeat: true,
+                                    animate: true,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          // Help cards with staggered animation
+                          ...List.generate(_viewModel.helpOptions.length, (index) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: 16,
+                                top: index == 0 ? 0 : 0,
+                              ),
+                              child: Transform.translate(
+                                offset: Offset(
+                                  0,
+                                  _slideAnimation.value * (index + 1),
+                                ),
+                                child: Opacity(
+                                  opacity: _fadeAnimation.value,
+                                  child: HelpOptionCard(
+                                    option: _viewModel.helpOptions[index],
+                                    delay: index * 200,
+                                    onTap: () => _viewModel.handleAction(_viewModel.helpOptions[index]),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+
+                          const SizedBox(height: 40),
+
+                          // Safety message with animation
+                          FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0.0, 0.5),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: _controller,
+                                  curve: const Interval(0.3, 0.5),
+                                ),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                  ),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.verified_rounded, color: Color(0xFF7986CB), size: 24),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Secure & Confidential',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            'All conversations are protected with end-to-end encryption and remain completely private.',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black54,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Help Option Card Widget (UI only)
+class HelpOptionCard extends StatefulWidget {
+  final HelpOption option;
+  final int delay;
+  final VoidCallback onTap;
+
+  const HelpOptionCard({
+    super.key,
+    required this.option,
+    required this.delay,
+    required this.onTap,
+  });
+
+  @override
+  State<HelpOptionCard> createState() => _HelpOptionCardState();
+}
+
+class _HelpOptionCardState extends State<HelpOptionCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.5, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    Future.delayed(Duration(milliseconds: widget.delay + 300), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: FadeTransition(
+          opacity: _opacityAnimation,
+          child: MouseRegion(
+            onEnter: (_) {
+              if (mounted) {
+                _controller.reverse();
+                Future.delayed(const Duration(milliseconds: 100), () {
+                  if (mounted) _controller.forward();
+                });
+              }
+            },
+            child: GestureDetector(
+              onTap: () {
+                _controller.reverse().then((_) {
+                  _controller.forward();
+                  widget.onTap();
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: widget.option.gradientColors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.option.color.withOpacity(0.3),
+                      blurRadius: 25,
+                      offset: const Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: Colors.white.withOpacity(0.2),
+                      blurRadius: 5,
+                      offset: const Offset(0, -2),
+                      spreadRadius: -2,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Background pattern
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Opacity(
+                        opacity: 0.1,
+                        child: Icon(
+                          widget.option.icon,
+                          size: 120,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.4),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Icon(
+                              widget.option.icon,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.option.title,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  widget.option.subtitle,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.white.withOpacity(0.9),
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.arrow_forward_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
