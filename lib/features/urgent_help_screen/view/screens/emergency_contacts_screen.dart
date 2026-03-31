@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../viewmodels/emergency_contacts_viewmodel.dart';
+import '../../viewmodel/emergency_contacts_viewmodel.dart';
 
 class EmergencyContactsScreen extends StatefulWidget {
   const EmergencyContactsScreen({super.key});

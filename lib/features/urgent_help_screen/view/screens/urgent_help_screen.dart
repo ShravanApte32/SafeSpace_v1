@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../viewmodels/urgent_help_viewmodel.dart';
-import './emergency_contacts_screen.dart';
+import '../../viewmodel/urgent_help_viewmodel.dart';
+import 'emergency_contacts_screen.dart';
 
 class UrgentHelpScreen extends StatefulWidget {
   const UrgentHelpScreen({super.key});

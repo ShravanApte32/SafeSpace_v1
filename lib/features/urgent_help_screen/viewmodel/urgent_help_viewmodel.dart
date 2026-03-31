@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import '../viewmodels/base_viewmodel.dart';
+import '../../../core/viewmodel/base_viewmodel.dart';
 
 class UrgentHelpViewModel extends BaseViewModel {
   // Navigation destinations

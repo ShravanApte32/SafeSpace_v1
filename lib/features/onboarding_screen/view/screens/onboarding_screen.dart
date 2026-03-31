@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../viewmodels/onboarding_viewmodel.dart';
+import '../../viewmodel/onboarding_viewmodel.dart';
 // import './login_screen.dart';
 // import '../../core/widgets/app_loader.dart';
 

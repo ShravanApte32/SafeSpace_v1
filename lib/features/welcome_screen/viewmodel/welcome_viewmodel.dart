@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import '../viewmodels/base_viewmodel.dart';
-import '../../core/widgets/app_loader.dart';
+import '../../../core/viewmodel/base_viewmodel.dart';
+import '../../../shared/widgets/app_loader.dart';
 
 class WelcomeViewModel extends BaseViewModel {
   static const String routeOnboarding = '/onboarding';

@@ -1,5 +1,5 @@
 import 'package:url_launcher/url_launcher.dart';
-import '../viewmodels/base_viewmodel.dart';
+import '../../../core/viewmodel/base_viewmodel.dart';
 
 class EmergencyContactsViewModel extends BaseViewModel {
   List<EmergencyContact> _userContacts = [];

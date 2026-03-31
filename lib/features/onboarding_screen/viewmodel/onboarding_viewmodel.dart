@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../viewmodels/base_viewmodel.dart';
+import '../../../core/viewmodel/base_viewmodel.dart';
 
 class OnboardingViewModel extends BaseViewModel {
   // Onboarding data (pure data)

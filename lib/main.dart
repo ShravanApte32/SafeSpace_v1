@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:safespace_v1/presentation/screens/splash_screen.dart';
+import 'package:safespace_v1/features/splash_screen/view/screens/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
